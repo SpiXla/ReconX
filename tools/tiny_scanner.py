@@ -1,4 +1,6 @@
 import socket
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 # pentestkit -t 127.0.0.1 -p 8080,8000,22 
 # pentestkit -t scanme.nmap.org -p 80,22,443,3306,8080
@@ -6,17 +8,38 @@ import socket
 # pentestkit -t ftp.debian.org -p 21
 # pentestkit -t smtp.gmail.com -p 25
 # pentestkit -t example.com -p 443,80
-# pentestkit -t example.com -p 443,80
+# pentestkit -t localhost -p 22,21,80,25,9000,3306,1111
+
 
 def grab_banner(s):
     try:
+        s.settimeout(5)
         s.send(b'\r\n')
         banner = s.recv(1024).decode().strip()
-        if banner:
-            return banner.split()[0].split('/')[0]
-        return None
+        return banner
     except:
         return None
+
+def get_service_from_banner(banner):
+    banner_lower = banner.lower()
+    if 'ssh' in banner_lower:
+        return 'SSH'
+    if 'https' in banner_lower:
+        return 'HTTPS'
+    elif 'ftp' in banner_lower:
+        return 'FTP'
+    elif 'smtp' in banner_lower or 'mail' in banner_lower:
+        return 'SMTP'
+    elif 'http' in banner_lower or 'apache' in banner_lower or 'nginx' in banner_lower:
+        return 'HTTP'
+    elif 'mysql' in banner_lower:
+        return 'MySQL'
+    elif 'postgres' in banner_lower:
+        return 'PostgreSQL'
+    elif 'redis' in banner_lower:
+        return 'Redis'
+    
+    return None
 
 def get_service(port):
     services = {
@@ -27,17 +50,36 @@ def get_service(port):
     }
     return services.get(int(port), "Unknown")
 
+def scan_port(target, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
+    try:
+        s.connect((target, int(port)))
+        banner = grab_banner(s)
+        if banner:
+            # print(f"Banner for port {port}: {banner}")
+            service = get_service_from_banner(banner) or get_service(port)
+            return f"Port {port} is open ({service})"
+        return f"Port {port} is open ({get_service(port)})"
+    except:
+        return f"Port {port} is closed"
+    finally:
+        s.close()
+
 def run(target, ports):
+    results = []
+    threads = []
+    
+    def worker(port):
+        result = scan_port(target, port)
+        results.append(result)
+    
     for port in ports:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        try:
-            s.connect((target, int(port)))
-            banner = grab_banner(s)
-            # print("banner: ", banner)
-            service = banner if banner else get_service(port)
-            print(f"Port {port} is open ({service})")
-        except:
-            print(f"Port {port} is closed")
-        finally:
-            s.close()
+        thread = threading.Thread(target=worker, args=(port,))
+        thread.start()
+        threads.append(thread)
+    
+    for thread in threads:
+        thread.join()
+    
+    return "\n".join(results)

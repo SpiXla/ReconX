@@ -7,7 +7,7 @@ BANNER = r"""
                 P E N T E S T - K I T
 """
 
-FLAGS = ["-t", "-d", "-h", "-g", "-o"]
+FLAGS = ["-t", "-d", "-n", "-g", "-o"]
 COMMAND_NOT_USED = "Usage error: No command provided. Use (pentestkit --help) for usage information."
 NOT_VALID = "Invalid option. Use --help for usage information."
 
@@ -23,9 +23,9 @@ OPTIONS:
                      Use this option to specify the target URL and the path to a wordlist for discovering hidden directories.
                      Example: -d http://example.com -w /path/to/wordlist.txt
 
-   -h  HostMapper    Run the network host mapper.
+   -n  HostMapper    Run the network host mapper.
                      Use this option to perform a ping sweep on a specified subnet to identify live hosts.
-                     Example: -h 192.168.1.0/24
+                     Example: -n 192.168.1.0/24
 
    -g  HeaderGrabber Run the HTTP header analyzer.
                      Use this option to retrieve and analyze HTTP headers from a specified URL, useful for identifying security headers.

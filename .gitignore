@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+venv/
+env/
+
+# Results
+results/
+*.txt
+
+# Go
+*.exe
+tests/*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
