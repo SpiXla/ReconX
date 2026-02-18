@@ -1,0 +1,8 @@
+admin
+login
+uploads
+dashboard
+config
+backup
+test
+api
