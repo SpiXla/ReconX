@@ -43,7 +43,6 @@ def parse_args(args):
                     print(NOT_VALID)
                     return None
                 result = host_mapper.run(args[2])
-                print(result)
             
             case '-g':
                 if len(args) < 3:
