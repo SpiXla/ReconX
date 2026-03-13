@@ -11,11 +11,11 @@ output_lock = threading.Lock()
 
 def check_host(ip_str):
     try:
-        response_time = ping(ip_str, timeout=1)
+        response_time = ping(ip_str, timeout=4)
         if response_time is not None:
             return f"{ip_str} is reachable (delay: {response_time:.4f}s)"
     except Exception as e:
-        return f"Error pinging {ip_str}: {e}"
+        # return f"Error pinging {ip_str}: {e}"
         pass
 
 def run(subnet):
@@ -28,8 +28,18 @@ def run(subnet):
         # Map the check_host function to the list of hosts
         results = list(executor.map(check_host, hosts))
 
+    up_hosts = [result for result in results if result]
+    output = []
+    if not up_hosts:
+        output.append("No hosts are up")
+    else:
+        output.append("Live hosts found:")
+        for result in up_hosts:
+            output.append(result.split()[0])
+    
     with output_lock:
-        for result in results:
-            if result :
-                print(result)
+        for line in output:
+            print(line)
+    
+    return "\n".join(output)
 

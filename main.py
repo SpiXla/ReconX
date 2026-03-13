@@ -1,14 +1,28 @@
 #!/usr/bin/env python
-from config import BANNER, FLAGS, Color
+import sys
+import signal
+from config import BANNER, Color
 from utils import parser
 
+def signal_handler(sig, frame):
+    print(f"\n{Color.RED}Interrupted. Exiting...{Color.RESET}")
+    sys.exit(0)
+
 def main():
+    signal.signal(signal.SIGINT, signal_handler)
     print(BANNER)
     while True:
-        user_input = input(f"{Color.GREEN}{"$>"}{Color.RESET} ")
-        if user_input == "quit" or user_input == "exit" :
+        try:
+            user_input = input(f"{Color.GREEN}$>{Color.RESET} ")
+        except EOFError:
             break
-        parser.parse_args(user_input.split(" "))
+        if user_input.strip() == "quit" or user_input.strip() == "exit":
+            break
+        if user_input.strip() == "--help":
+            from config import USAGE
+            print(USAGE)
+            continue
+        parser.parse_args(user_input.split())
 
 
 if __name__ == "__main__":

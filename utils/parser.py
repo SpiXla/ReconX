@@ -1,58 +1,124 @@
-from config import USAGE, NOT_VALID, COMMAND_NOT_USED
+from config import USAGE, NOT_VALID, COMMAND_NOT_USED, BANNER
 from tools import tiny_scanner, dir_finder, host_mapper, header_grabber
+from utils.output import save_results
 
 def parse_args(args):
-    if len(args) < 2:
+    if not args:
         print(COMMAND_NOT_USED)
-        return None
+        return
     
-    if args[0] != 'pentestkit':
-        print(COMMAND_NOT_USED)
-        return None
-    
-    if args[1] == '--help':
+    if args[0] == '--help':
         print(USAGE)
-        return None
+        return
     
-    if args[1] not in ['-t', '-d', '-n', '-g', '-o']:
+    valid_flags = {'-t', '-d', '-n', '-g', '-o'}
+    if args[0] not in valid_flags:
         print(NOT_VALID)
-        return None
+        return
     
-    try:
-        match args[1]:
-            case '-t':
-                if len(args) < 5 or args[3] != '-p':
-                    print(NOT_VALID)
-                    return None
-                ports = args[4].split(',')
-                if not ports or not all(p.strip().isdigit() for p in ports):
-                    print("Error: Invalid port format")
-                    return None
-                result = tiny_scanner.run(args[2], ports)
-                print(result)
-            
-            case '-d':
-                if len(args) < 5 or args[3] != '-w':
-                    print(NOT_VALID)
-                    return None
-                result = dir_finder.run(args[2], args[4])
-                print(result)
-            
-            case '-n':
-                if len(args) < 3:
-                    print(NOT_VALID)
-                    return None
-                result = host_mapper.run(args[2])
-            
-            case '-g':
-                if len(args) < 3:
-                    print(NOT_VALID)
-                    return None
-                result = header_grabber.run(args[2])
-                print(result)
+    target = None
+    url = None
+    subnet = None
+    graburl = None
+    ports = None
+    wordlist = None
+    output = None
     
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        
+        if arg == '-t':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            target = args[i + 1]
+            i += 2
+        elif arg == '-d':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            url = args[i + 1]
+            i += 2
+        elif arg == '-n':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            subnet = args[i + 1]
+            i += 2
+        elif arg == '-g':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            graburl = args[i + 1]
+            i += 2
+        elif arg == '-p':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            ports = args[i + 1]
+            i += 2
+        elif arg == '-w':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            wordlist = args[i + 1]
+            i += 2
+        elif arg == '-o':
+            if i + 1 >= len(args):
+                print(NOT_VALID)
+                return
+            output = args[i + 1]
+            i += 2
+        else:
+            print(NOT_VALID)
+            return
     
-    return None
+    if target:
+        if not ports:
+            print(NOT_VALID)
+            return
+        port_list = ports.split(',')
+        if not all(p.strip().isdigit() for p in port_list):
+            print("Error: Invalid port format")
+            return
+        result = tiny_scanner.run(target, port_list)
+        print(result)
+        if output:
+            save_results(output, result)
+            print(f"Data saved in {output}")
+    
+    elif url:
+        if not wordlist:
+            print(NOT_VALID)
+            return
+        result = dir_finder.run(url, wordlist)
+        print(result)
+        if output:
+            save_results(output, result)
+            print(f"Data saved in {output}")
+    
+    elif subnet:
+        result = host_mapper.run(subnet)
+        if output:
+            save_results(output, result)
+            print(f"Data saved in {output}")
+    
+    elif graburl:
+        result = header_grabber.run(graburl)
+        print(result)
+        if output:
+            save_results(output, result)
+            print(f"Data saved in {output}")
+    
+    else:
+        print(NOT_VALID)
+
+
+if __name__ == "__main__":
+    import sys
+    print(BANNER)
+    if len(sys.argv) > 1 and sys.argv[1] == '--help':
+        print(USAGE)
+    else:
+        parse_args(sys.argv[1:])
