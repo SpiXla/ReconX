@@ -26,8 +26,10 @@ A multi-functional penetration testing toolkit for educational use.
 
 ## Installation & Setup
 ```bash
-git clone <repo-url>  # e.g., https://github.com/username/pentest-kit.git
+git clone https://github.com/SpiXla/pentest-kit
 cd pentest-kit
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 mkdir -p wordlists results  # Optional dirs
 python main.py --help
