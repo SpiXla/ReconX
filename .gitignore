@@ -8,7 +8,7 @@ env/
 
 # Results
 results/
-*.txt
+
 
 # Go
 *.exe
