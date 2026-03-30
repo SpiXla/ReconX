@@ -9,6 +9,7 @@ A multi-functional penetration testing toolkit for educational use.
 - [Installation & Setup](#installation--setup)
 - [Development Environment](#development-environment)
 - [Usage](#usage)
+- [Make Commands](#make-commands)
 - [Output Format](#output-format)
 - [Testing Environment](#testing-environment)
 - [Privilege Requirements](#privilege-requirements)
@@ -21,111 +22,96 @@ A multi-functional penetration testing toolkit for educational use.
 
 ## Prerequisites
 - Python 3.8+
-- `requests` and `ping3` (installed via requirements.txt)
-- Wordlists for DirFinder (directory optional, create `./wordlists/common.txt`)
+- Go 1.21+ (for tests)
+- `requests` and `ping3` (via `make install`)
 
 ## Installation & Setup
+Use Makefile:
 ```bash
-git clone https://github.com/SpiXla/ReconX
-cd ReconX
+make install      # Creates venv, installs deps
+make setup        # Creates wordlists/results dirs
+make run          # Starts app in venv
+```
+Or manual:
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-mkdir -p wordlists results  # Optional dirs
-python main.py --help
+make setup
+make run
 ```
 
-
-Configuration: Edit `config.py` for custom banners/colors/USAGE if needed.
+Config: Edit `config.py` for banners/colors.
 
 ## Development Environment
-Recommended: Kali Linux VM or Ubuntu with Python. No special VM setup required. Test on isolated network/VMs (e.g., VirtualBox with NAT/Host-only).
+Kali/Ubuntu/macOS with Python/Go. Test on isolated VMs.
 
 ## Usage
-Run `python main.py` to start the interactive pentest shell.
+```bash
+make run
+```
+Interactive shell (`$>`):
+- `-t scanme.nmap.org -p 22,80`
+- `--help`
+- `quit`
 
-Once in the shell (`$>` prompt):
-- Enter command flags directly (space-separated), e.g., `-t scanme.nmap.org -p 22,80,443`
-- Type `--help` to show full usage.
-- Type `quit` or `exit` to leave the shell.
+**Tools**:
+- **TinyScanner** (`-t TARGET -p PORTS`)
+- **DirFinder** (`-d URL -w WORDLIST`)
+- **HostMapper** (`-n SUBNET`)
+- **HeaderGrabber** (`-g URL`)
+- `-o FILE` → `./results/FILE`
 
-**Tools & Flags** (from `--help`):
-
-**TinyScanner** (`-t TARGET -p PORTS`): TCP port scan with banner/service detection.
-- Example (in shell): `-t scanme.nmap.org -p 22,80,443 -o scan_results.txt`
-- Params: `-t` IP/hostname, `-p` comma-separated ports (default common).
-
-**DirFinder** (`-d URL -w WORDLIST`): Brute-force directories.
-- Example (in shell): `-d http://test.com -w wordlists/common.txt -o dirs.txt`
-- Params: `-d` base URL, `-w` wordlist path. Uses threads, checks !=404.
-
-**HostMapper** (`-n SUBNET`): Ping sweep for live hosts.
-- Example (in shell): `-n 192.168.1.0/24 -o hosts.txt`
-- Params: `-n` CIDR (e.g., 10.0.0.0/24).
-
-**HeaderGrabber** (`-g URL`): Fetch/analyze HTTP headers, check security.
-- Example (in shell): `-g https://example.com -o headers.txt`
-- Params: `-g` URL (auto http:// if needed).
-
-**Common Flag**: `-o FILENAME` saves to `./results/FILENAME`.
+## Make Commands
+```bash
+make help         # List all
+make install      # Venv + deps
+make run          # App
+make test         # Python stub + Go servers (sudo for low ports)
+make lint         # black/ruff/mypy (needs dev deps)
+make clean        # Remove venv/caches
+make setup        # Dirs/wordlist
+```
 
 ## Output Format
-- Console: Real-time results (e.g., "Port 80 open (HTTP)").
-- File: `./results/FILENAME` – plain text summary.
+Console real-time, `-o` → `./results/`.
 
 ## Testing Environment
-**Golang Test Targets** (pure stdlib; no deps):
-- Port scanning: `cd tests/port_scanning && go run port_scanning_target.go` (TCP servers on 21/FTP, 22/SSH, 25/SMTP, 80/HTTP, 3306/MySQL, 9000/slow, 1111/HTTPS sim).
-- Fuzzing/DirFinder: `cd tests/fuzzing && go run fuzz_target.go` (HTTP on localhost:8080; paths: /admin=200, /created=201, /old-page=301→/admin, /temp-redirect=302→/login, /bad=400, /private=401, /uploads=403, /method POST=200 else 405, /crash=500, /maintenance=503, else 404).
+**Make test** starts:
+- Go port_scanning: TCP (21/22/25/80/3306/9000/1111)
+- Go fuzzing: HTTP localhost:8080 (statuses/redirects)
 
-**Public Targets**:
-- scanme.nmap.org (ports)
-- http://testphp.vulnweb.com (dirs/headers)
-
-**Setup**: Use isolated VMs/network for HostMapper/DirFinder tests.
+Public: scanme.nmap.org, testphp.vulnweb.com.
 
 ## Privilege Requirements
-- **TinyScanner/DirFinder/HeaderGrabber**: User-level (TCP/HTTP).
-- **HostMapper**: May require root/sudo for ICMP ping (ping3 limitation); fails silently otherwise.
-- Run `sudo python main.py ...` if ping issues.
+- HostMapper: sudo for ICMP.
+- make test: sudo for ports <1024.
+- `sudo make test/run` if needed.
 
 ## Troubleshooting
-- **No wordlist**: Create `./wordlists/common.txt` with dirs (e.g., admin, login).
-- **Ping fails**: Use sudo, check firewall/ICMP.
-- **Requests errors**: Proxy/firewall; increase timeout in code.
-- **Permission denied**: chmod +x *.py, mkdir results.
-- **Module not found**: `pip install -r requirements.txt`.
+- No venv: `make install`
+- Ping fail: sudo
+- Port bind: `sudo make test`, `pkill -f target.go`
+- Mod not found: `make install`
 
 ## Known Limitations
-- HostMapper: ICMP-dependent, silent fail on firewalls/no privs; max 50 threads.
-- DirFinder/HeaderGrabber: HTTP only (requests lib), no HTTPS bypass, timeout=5/10s.
-- No raw sockets (needs root for SYN scan).
-- Environment: Unix-like (macOS/Linux); Windows ping3 may vary.
-- Wordlists empty by default.
+- ICMP sudo-dep.
+- HTTP only.
+- Unix-like.
 
 ## Legal & Ethical Guidelines
-⚠️ **Educational/authorized use ONLY.** 
-- Obtain written permission before scanning.
-- Comply with CFAA/laws.
-- Do not target production systems without approval.
-- Report vulnerabilities responsibly.
+Educational/authorized only.
 
 ## Project Architecture
 ```
 ReconX/
-├── main.py              # CLI parser
-├── config.py            # Configs
-├── requirements.txt     # requests, ping3
-├── tools/
-│   ├── tiny_scanner.py  # socket/thread port scan
-│   ├── dir_finder.py    # requests brute-force
-│   ├── host_mapper.py   # ping3 sweep
-│   └── header_grabber.py # requests headers
+├── Makefile          # Dev workflow
+├── main.py
+├── config.py
+├── requirements.txt
+├── tools/            # Tools
 ├── utils/
-│   ├── output.py        # Save to results/
-│   └── parser.py        # Arg parsing
-├── wordlists/           # Create common.txt
-├── results/             # Outputs
-└── tests/               # Go test targets
+├── wordlists/
+├── results/          # Outputs
+└── tests/            # Go targets
 ```
-
