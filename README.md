@@ -1,4 +1,4 @@
-# Pentest-Kit 🛡️
+# ReconX 🛡️
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
@@ -26,8 +26,8 @@ A multi-functional penetration testing toolkit for educational use.
 
 ## Installation & Setup
 ```bash
-git clone https://github.com/SpiXla/pentest-kit
-cd pentest-kit
+git clone https://github.com/SpiXla/ReconX
+cd ReconX
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -112,7 +112,7 @@ Once in the shell (`$>` prompt):
 
 ## Project Architecture
 ```
-pentest-kit/
+ReconX/
 ├── main.py              # CLI parser
 ├── config.py            # Configs
 ├── requirements.txt     # requests, ping3
