@@ -58,7 +58,7 @@ Interactive shell (`$>`):
 **Tools**:
 - **TinyScanner** (`-t TARGET -p PORTS`)
 - **DirFinder** (`-d URL -w WORDLIST`)
-- **HostMapper** (`-n SUBNET`)
+- **HostMapper** (`-n SUBNET`, requires root/sudo for raw ICMP scans)
 - **HeaderGrabber** (`-g URL`)
 - `-o FILE` → `./results/FILE`
 
@@ -84,18 +84,18 @@ Console real-time, `-o` → `./results/`.
 Public: scanme.nmap.org, testphp.vulnweb.com.
 
 ## Privilege Requirements
-- HostMapper: sudo for ICMP.
+- HostMapper: root/sudo required for ICMP scanning.
 - make test: sudo for ports <1024.
 - `sudo make test/run` if needed.
 
 ## Troubleshooting
 - No venv: `make install`
-- Ping fail: sudo
+- HostMapper permission error: run with `sudo` because raw ICMP requires root privileges
 - Port bind: `sudo make test`, `pkill -f target.go`
 - Mod not found: `make install`
 
 ## Known Limitations
-- ICMP sudo-dep.
+- HostMapper depends on root/sudo access for ICMP host discovery.
 - HTTP only.
 - Unix-like.
 

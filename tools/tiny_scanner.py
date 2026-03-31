@@ -2,16 +2,9 @@ import socket
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-# pentestkit -t 127.0.0.1 -p 8080,8000,22 
-# pentestkit -t scanme.nmap.org -p 80,22,443,3306,8080
-# pentestkit -t bandit.labs.overthewire.org -p 2220
-# pentestkit -t ftp.debian.org -p 21
-# pentestkit -t smtp.gmail.com -p 25
-# pentestkit -t example.com -p 443,80
-# pentestkit -t localhost -p 22,21,80,25,9000,3306,1111
-
 
 def grab_banner(s):
+    
     try:
         s.settimeout(5)
         s.send(b'\r\n')

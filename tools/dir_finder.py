@@ -1,6 +1,3 @@
-#  pentestkit -d http://example.com -w ./wordlists/common.txt
-#  pentestkit -d http://localhost:8080 -w ./wordlists/common.txt
-
 import concurrent.futures
 import requests
 
